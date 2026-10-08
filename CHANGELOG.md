@@ -4,7 +4,21 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Asesor de SmartApps en `mp-integrate`: gates obligatorios, capacidades en
+  orden (solo cobrar, QR, imprimir, Bluetooth y extras), línea base del SDK
+  `nativesdk` 7.2.0 y análisis de cada versión nueva.
+- Guías `smartapps-resources.md` (fuentes públicas de consulta) y
+  `smartapps-feedback.md` (registro y envío confirmado de problemas no
+  resueltos; destinatario `MP_SMARTAPPS_FEEDBACK_EMAIL`, pendiente).
+
 ### Changed
+
+- La fuente del SDK de SmartApps pasa a ser la release pública de
+  `mercadopago/point-smartapp-demo-android`.
+- El validador de SmartApps acepta `getPaymentMethodsList` (flujo con
+  `PaymentRequestData`, SDK 7.1.0+).
 
 - The Commerce Agents plugin now discovers Python 3.11+ agent backends and
   generates composition-based Checkout Pro adapters instead of requiring the

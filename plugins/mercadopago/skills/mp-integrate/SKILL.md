@@ -32,6 +32,8 @@ Use `${CLAUDE_PLUGIN_ROOT}` for every bundled reference and script. Claude Code 
 | `guides/wallet-connect.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/wallet-connect.md` | product = wallet-connect |
 | `guides/payouts.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/payouts.md` | product = money-out (current name: Payouts) |
 | `guides/smartapps.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/smartapps.md` | product = smartapps |
+| `guides/smartapps-resources.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/smartapps-resources.md` | product = smartapps y la guía + MCP no responden |
+| `guides/smartapps-feedback.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/smartapps-feedback.md` | product = smartapps y el problema sigue sin resolverse |
 | `guides/webhooks.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/guides/webhooks.md` | any product + webhooks |
 | `products.md` | `${CLAUDE_PLUGIN_ROOT}/skills/mp-integrate/references/products.md` | test cards per country, API reference |
 
@@ -258,10 +260,11 @@ Before reporting success, run:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-wallet-connect-integration.mjs" .
 ```
 
-### LOCK 13 — SmartApps requires commercial access, Android, and its private SDK
+### LOCK 13 — SmartApps requires commercial access, Android, and its SmartApps SDK
 
 When `product=smartapps`, read `references/guides/smartapps.md` before any
-scaffold decision.
+scaffold decision and run it as the SmartApps advisor (gates first, then the
+capabilities in order: solo cobrar, QR, imprimir, Bluetooth y extras).
 
 1. Confirm that the developer has an active SmartApps agreement with the
    Mercado Pago team. If not explicitly confirmed, stop with
@@ -277,10 +280,12 @@ scaffold decision.
 4. Resolve `main` versus `mini` and `own` versus `third-party` before writing.
    Main apps own the HOME launcher; mini apps do not. Third-party integrations
    require the SDK OAuth mode.
-5. The SDK is the private AAR delivered in the Mercado Pago integration kit.
-   Never substitute a public Mercado Pago SDK or invent a Maven coordinate.
-   Ask before copying/updating it, verify the latest artifact with the
-   integration team, and use only that latest version.
+5. El SDK es el AAR `nativesdk` publicado en las Releases de
+   `https://github.com/mercadopago/point-smartapp-demo-android`
+   (`Third-Apps-integration-kit.zip`; referencia en `app/libs`). Nunca lo
+   sustituyas por un SDK backend/web de Mercado Pago ni inventes una coordenada
+   Maven. Pregunta antes de copiarlo/actualizarlo, confirma la última release y
+   ejecuta el análisis de versión de la guía cuando supere la línea base.
 6. Payment methods, payments, printer, scanner/camera, and Bluetooth are used
    through the SmartApps SDK. Do not call payment APIs directly from the
    terminal or request prohibited direct Android permissions.
@@ -293,7 +298,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-smartapps-integration.mjs" . "{main
 
 Passing this check is not device certification. Compilation requires the real
 latest AAR; payment and hardware validation require the Mercado Pago development
-terminal and the sandbox-flavor kit.
+terminal with SmartPOS Sandbox and the development kit.
 
 ### LOCK 14 — Money Out is Payouts and its contract is country-specific
 
@@ -352,6 +357,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/validate-payouts-integration.mjs" . "{AR|BR}
 | `smartapps-agreement=` | `confirmed` (only when `product=smartapps`; absence is never inferred as confirmation) |
 | `smartapp-kind=` | `main` / `mini` (only when `product=smartapps`) |
 | `smartapp-ownership=` | `own` / `third-party` (only when `product=smartapps`) |
+| `smartapp-capabilities=` | lista separada por comas de `payments`, `qr-camera`, `qr-payment`, `print-receipt`, `print-custom`, `bluetooth`, `terminal-info` (solo cuando `product=smartapps`) |
 
 After parsing or inferring `product`, apply LOCK 5 normalization immediately. Use only the normalized internal value for the Product Matrix, guide selection, CTA resolution, and scaffold branches. The presentation-only slug `checkout-api-orders` may appear in the final recommendation metadata, but it must never be used as an internal branch value.
 
@@ -467,6 +473,7 @@ These are all the v3 anti-pattern. The developer cannot click on plain text. The
 | 5.7 | `smartapps-agreement` | "Agreement" | Only when `product=smartapps`. Ask whether the active commercial/integration agreement with Mercado Pago is confirmed. Options: `confirmed` / `not confirmed`. If not confirmed, stop before any write. |
 | 5.8 | `smartapp-kind` | "SmartApp type" | Only when `product=smartapps` and the agreement is confirmed. Options: `main` / `mini`. |
 | 5.9 | `smartapp-ownership` | "Terminal use" | Only when `product=smartapps` and the agreement is confirmed. Options: `own` / `third-party`. |
+| 5.10 | `smartapp-capabilities` | "Capacidades" | Solo cuando `product=smartapps` y 5.7–5.9 están resueltos. Selección múltiple en este orden: Solo cobrar / QR / Imprimir / Bluetooth y extras. Luego aplica las aclaraciones de QR e impresión de `references/guides/smartapps.md`. |
 | 6 | `recurrent` | "Recurrent" | Only when the matrix marks it `yes` for the chosen product. Options: `yes` / `no`. |
 | 7 | `3ds` | "3DS" | Only when the matrix marks it `yes`. Options: `yes` / `no`. |
 | 8 | `marketplace` | "Splits" | Only when the matrix marks it `optional`. Options: `yes` / `no`. |
@@ -562,7 +569,7 @@ Fields to persist (write after each is resolved, do not wait until the end):
 | `marketplace` | yes | conditional | `preferences` for Checkout Pro/Wallet; `payments` for Checkout API | n/a | n/a | implicit | `marketplace-checkout=` |
 | `wallet-connect` | yes | n/a | `orders` | n/a | n/a | n/a | n/a |
 | `money-out` | conditional (verified REST is valid) | n/a | n/a (Payouts; country-specific contract) | n/a | n/a | n/a | country resolves contract |
-| `smartapps` | n/a (private kit AAR) | Android | n/a | n/a | n/a | n/a | `smartapp-kind=`, `smartapp-ownership=` |
+| `smartapps` | n/a (AAR nativesdk de la release pública) | Android | n/a | n/a | n/a | n/a | `smartapp-kind=`, `smartapp-ownership=` |
 
 When a product's `mode` cell is fixed (single value or `n/a`), **never ask** the developer about mode — just use the value or skip the question.
 
@@ -657,11 +664,13 @@ When `product=smartapps`, do not render the generic server/web checkout bundle
 below and do not create `.env` credentials. Render a SmartApps-specific bundle
 from `references/guides/smartapps.md` plus the authenticated MCP result with
 these sections: commercial agreement, Android project eligibility, app kind
-(`main|mini`), ownership (`own|third-party`), latest private SDK artifact,
+(`main|mini`), ownership (`own|third-party`), selected capabilities
+(`smartapp-capabilities`), latest SDK release artifact and version analysis,
 Manifest/initialization contract, SDK-only payment flow, static validation,
-development-terminal tests, and homologation. Label anything that still
-depends on the private kit or terminal as blocked; never replace it with a
-guessed public SDK or API call. Then continue to Step 4.5.
+development-terminal tests, official integration stages, and homologation.
+Label anything that still depends on an unconfirmed SDK artifact or the
+terminal as blocked; never replace it with a guessed SDK or API call. Then
+continue to Step 4.5.
 
 ### Payouts bundle override
 

@@ -46,7 +46,8 @@
         "fintech",
         "qr",
         "subscriptions",
-        "marketplace"
+        "marketplace",
+        "smartapps"
       ],
       "license": "Apache-2.0",
       "tools": "Read, Grep, Glob, Bash, WebFetch, AskUserQuestion, Write, Edit",

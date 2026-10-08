@@ -50,6 +50,26 @@ const paymentCode = `
   }
 `;
 
+const builderPaymentCode = `
+  fun startPayment(amount: BigDecimal) {
+    MPManager.paymentMethodsTools.getPaymentMethodsList { methodsResponse ->
+      methodsResponse.doIfSuccess { methods ->
+        val request = PaymentRequestData.builder(amount)
+          .setPaymentMethod(methods.first())
+          .setPaymentTransactionMetadata(
+            PaymentTransactionMetadata(externalReference = UUID.randomUUID().toString())
+          )
+          .build()
+        MPManager.paymentFlow.launchPaymentFlow(request, object : PaymentFlowCallback {
+          override fun onProgress() {}
+          override fun onSuccess(data: PaymentResponseData) { showApproved(data.paymentReference) }
+          override fun onError(error: SDKException) { showActionableError(error.message) }
+        })
+      }
+    }
+  }
+`;
+
 function manifest({ main = true, oauth = false, extra = '' } = {}) {
   return `
     <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -96,6 +116,7 @@ function validate(name, projectOptions, appKind, ownership, expectedStatus, expe
 try {
   validate('valid-main-own', {}, 'main', 'own', 0);
   validate('valid-mini-third-party', { main: false, oauth: true }, 'mini', 'third-party', 0);
+  validate('valid-main-own-builder-flow', { paymentCode: builderPaymentCode }, 'main', 'own', 0);
   validate('web-project', { manifest: '<html></html>' }, 'main', 'own', 1, 'AndroidManifest must declare');
   validate('main-without-home', { main: false }, 'main', 'own', 1, 'must declare android.intent.category.HOME');
   validate('mini-claims-home', { main: true }, 'mini', 'own', 1, 'must not claim android.intent.category.HOME');

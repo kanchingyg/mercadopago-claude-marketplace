@@ -83,12 +83,12 @@ if (!packageCandidates.length) {
 requirePattern(
   gradleSource,
   /implementation\s*(?:\(|\s)\s*(?:files|fileTree)\s*\([^\n)]*(?:nativesdk|smartapps)[^\n)]*\.aar|implementation\s+files\s*\([^\n)]*(?:nativesdk|smartapps)[^\n)]*\.aar/i,
-  'Gradle must load the Mercado Pago SmartApps AAR supplied by the integration kit',
+  'Gradle must load the Mercado Pago SmartApps AAR (nativesdk) from the official SDK release',
 );
 forbidPattern(
   gradleSource,
   /com\.mercadopago:(?:sdk|sdk-android)|github\.com\/mercadopago\/sdk/i,
-  'public Mercado Pago SDK coordinates must not replace the private SmartApps kit AAR',
+  'backend/web Mercado Pago SDK coordinates must not replace the SmartApps AAR',
 );
 forbidPattern(
   gradleSource,
@@ -155,7 +155,7 @@ forbidPattern(
 requirePattern(codeSource, /class\s+\w+\s*:\s*Application\s*\(|extends\s+Application\b/, 'SDK initialization must live in an Android Application class');
 requirePattern(codeSource, /MPConfigBuilder\s*\(/, 'SmartApps must configure the SDK with MPConfigBuilder');
 requirePattern(codeSource, /MPManager(?:\.INSTANCE)?\.initialize\s*\(/, 'SmartApps must initialize MPManager');
-requirePattern(codeSource, /paymentMethodsTools[\s\S]{0,200}?getPaymentMethods\s*(?:\(|\{)/i, 'payment methods must be discovered through getPaymentMethods');
+requirePattern(codeSource, /paymentMethodsTools[\s\S]{0,200}?getPaymentMethods(?:List)?\s*(?:\(|\{)/i, 'payment methods must be discovered through getPaymentMethodsList or getPaymentMethods');
 requirePattern(codeSource, /launchPaymentFlow\s*\(/, 'payments must be launched through the SmartApps SDK payment flow');
 requirePattern(codeSource, /doIfSuccess\s*(?:\(|\{)|onSuccess\s*\(/, 'payment flow must handle successful responses');
 requirePattern(codeSource, /doIfError\s*(?:\(|\{)|onError\s*\(/, 'payment flow must handle actionable errors');
